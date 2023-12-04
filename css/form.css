@@ -1,0 +1,32 @@
+.field {
+    display: flex;
+    flex-direction: column;
+}
+
+.button-bar {
+    display: flex;
+    flex-direction: row;
+}
+
+button {
+    margin: 0 5px 0 0;
+    min-width: 90px;
+}
+
+select,
+input,
+button {
+    min-height: 22px;
+}
+
+@media only screen and (max-width: 320px) {
+    .button-bar {
+        display: flex;
+        flex-direction: column;
+    }
+
+    button {
+        margin: 0 0 5px 0;
+        min-width: 90px;
+    }
+}

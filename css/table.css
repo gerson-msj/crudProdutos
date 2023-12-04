@@ -1,0 +1,40 @@
+
+table {
+    width: 100%;
+    padding: 0 5px 0 5px;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th {
+    padding: 5px;
+    border-right: 1px solid lightblue;
+}
+
+th:last-child {
+    border-right: 0;
+}
+
+td {
+    text-align: center;
+    padding: 5px;
+}
+
+tr {
+    border-bottom: 1px solid lightblue;
+}
+
+tr:hover {
+    background-color: whitesmoke;
+    cursor: pointer;
+}
+
+tr:first-child:hover {
+    background-color: white;
+    cursor: default;
+}
+
+.scroll {
+    overflow-x: auto;
+    min-width: 480px;
+}
