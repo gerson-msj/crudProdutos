@@ -36,37 +36,47 @@ export default class IndexViewModel {
 
     /** @type {HTMLButtonElement} */
     #cadastrar = document.getElementById("cadastrar");
-    /** @type {Function} @param {Produto} produto */
-    oncadastrar = null;
-
+    
     /** @type {HTMLButtonElement} */
     #limpar = document.getElementById("limpar");
-    /** @type {Function} */
-    onLimpar = null;
-
+    
     /** @type {HTMLButtonElement} */
     #salvar = document.getElementById("salvar");
-    /** @type {Function} */
-    onsalvar = null;
-
+    
     /** @type {HTMLButtonElement} */
     #cancelar = document.getElementById("cancelar");
-    /** @type {Function} */
+    /** @function */
     oncancelar = null;
 
     /** @type {HTMLButtonElement} */
     #excluir = document.getElementById("excluir");
-    /** @type {Function} */
-    onexcluir = null;
+    
+    /**
+     * @param {number} id 
+     */
+    onexcluir = (id) => {};
 
     /** @type {HTMLInputElement} */
     #filtroNome = document.getElementById("filtroNome");
-
+    get filtroNome() { return this.#filtroNome.value; }
+    
     /** @type {HTMLSelectElement} */
     #filtroDepartamento = document.getElementById("filtroDepartamento");
+    get filtroDepartamento() { return parseInt(this.#filtroDepartamento.value); }
 
-    /** @type {Function} */
-    onfiltrar = null;
+    /**
+     * @param {string} filtroNome 
+     * @param {number} filtroDepartamento 
+     */
+    onfiltrar = (filtroNome, filtroDepartamento) => {};
+
+    /**
+     * @param {Produto} produto 
+     */
+    onsalvar = (produto) => {};
+
+    /**@param {number} id */
+    oneditar = (id) => {};
 
     /** @type {Departamento[]} */
     #departamentos = [];
@@ -79,43 +89,35 @@ export default class IndexViewModel {
 
     constructor() {
         this.#cadastrar.onclick = () => {
-            if (this.oncadastrar && this.#podeCadastrar()){
+            if (this.#podeSalvar()) {
                 this.#writeToProduto();
-                this.oncadastrar(this.#produto);
+                this.onsalvar(this.#produto);
             }
         };
 
-        this.#limpar.onclick = () => {
-            if (this.onlimpar)
-                this.onlimpar();
-            this.novoProduto();
-            this.#nome.focus();
-        };
-
+        this.#limpar.onclick = () => this.novoProduto();
+        
         this.#salvar.onclick = () => {
-            if (this.onsalvar)
-                this.onsalvar();
+            if (this.#podeSalvar()) {
+                this.#writeToProduto();
+                this.onsalvar(this.#produto);
+            }
         };
 
-        this.#cancelar.onclick = () => {
-            if (this.oncancelar)
-                this.oncancelar();
-        };
+        this.#cancelar.onclick = () => this.novoProduto();
+        this.#excluir.onclick = () => this.onexcluir(this.#produto.id);
 
-        this.#excluir.onclick = () => {
-            if (this.onexcluir)
-                this.onexcluir();
-        };
+        this.#filtroNome.onkeyup = () => this.onfiltrar(this.filtroNome, this.filtroDepartamento);
+        this.#filtroDepartamento.onchange = () => this.onfiltrar(this.filtroNome, this.filtroDepartamento);
 
-        this.#filtroNome.onkeyup = () => {
-            if (this.onfiltrar)
-                this.onfiltrar();
-        };
+        [this.#nome, this.#marca, this.#peso, this.#preco].forEach(e => e.addEventListener("keyup", () => this.#ativarBotoes()));
+        this.#departamento.addEventListener("change", () => this.#ativarBotoes());
+    }
 
-        this.#filtroDepartamento.onchange = () => {
-            if (this.onfiltrar)
-                this.onfiltrar();
-        };
+    #ativarBotoes() {
+        const disabled = !this.#podeSalvar();
+        this.#cadastrar.disabled = disabled;
+        this.#salvar.disabled = disabled;
     }
 
     /**
@@ -155,6 +157,19 @@ export default class IndexViewModel {
         this.#readFromProduto();
         this.#botoesNovo.classList.remove("ocultar");
         this.#botoesEdicao.classList.add("ocultar");
+        this.#ativarBotoes();
+        this.#nome.focus();
+    }
+
+    /**
+     * @param {Produto} produto 
+     */
+    editarProduto(produto) {
+        this.#produto = produto;
+        this.#readFromProduto();
+        this.#botoesNovo.classList.add("ocultar");
+        this.#botoesEdicao.classList.remove("ocultar");
+        this.#ativarBotoes();
         this.#nome.focus();
     }
 
@@ -174,18 +189,12 @@ export default class IndexViewModel {
         this.#produto.preco = this.preco;
     }
 
-    #podeCadastrar() {
-        console.log(this.nome.trim(), this.idDepartamento, this.marca.trim(), this.peso.trim(), this.preco);
-        const valido = this.nome.trim() != ''
+    #podeSalvar() {
+        return this.nome.trim() != ''
             && this.idDepartamento > 0
             && this.marca.trim() != ''
             && this.peso.trim() != ''
             && this.preco > 0;
-
-        if(!valido)
-            alert("Existem campos inválidos!");
-
-        return valido;
     }
 
     /**
@@ -195,10 +204,24 @@ export default class IndexViewModel {
         this.#tabela.appendChild(this.#produtoToTr(produto));
     }
 
-    /** @type {number} */
-    editar(id) {
-        console.log(id);
+    /**
+     * @param {Produto[]} produtos 
+     */
+    apresentarProdutos(produtos) {
+        this.#limparTabela();
+        produtos.forEach(p => this.#tabela.appendChild(this.#produtoToTr(p)));
+    }
 
+    #limparTabela() {
+        const trs = this.#tabela.getElementsByTagName("tr");
+        const ids = []
+        for (let index = 0; index < trs.length; index++) {
+            const tr = trs[index];
+            if(tr.id.startsWith("tr_")) 
+                ids.push(tr.id);
+        }
+
+        ids.forEach(id => document.getElementById(id)?.remove());
     }
 
     /**
@@ -215,9 +238,7 @@ export default class IndexViewModel {
         tr.appendChild(this.#valueToTd(produto.marca));
         tr.appendChild(this.#valueToTd(produto.peso));
         tr.appendChild(this.#valueToTd(produto.preco.toString()));
-    
-        tr.onclick = () => editar(produto.id);
-    
+        tr.onclick = () => this.oneditar(produto.id);
         return tr;
     }
     

@@ -7,9 +7,6 @@ const viewModel = new IndexViewModel();
 /** @type {Produto[]} */
 let produtos = [];
 
-/** @type {Produto} */
-let produto;
-
 /** @type {number} */
 let lastIdProduto;
 
@@ -17,24 +14,18 @@ function main() {
     const departamentos = obterDepartamentos();
     viewModel.definirDepartamentos(departamentos);
     viewModel.novoProduto();
+    viewModel.onsalvar = salvar;    // Create.
+    viewModel.onfiltrar = filtrar;  // Read.
+    viewModel.oneditar = editar;    // Update.
+    viewModel.onexcluir = excluir;  // Delete.
 
-    viewModel.oncadastrar = cadastrar;
+    produtos.push(new Produto(1, 1, "Produto 1", "Marca", "1 kg", 9.99));
+    produtos.push(new Produto(2, 2, "Produto 2", "Marca", "1 kg", 9.99));
 
-    lastIdProduto = 0;
+    lastIdProduto = 2;
 
-    // IndexViewModel.buttonCadastrar.onclick = () => cadastrar();
-    // IndexViewModel.filtroNome.onkeyup = () => filtrar();
-    // IndexViewModel.filtroDepartamento.onchange = () => filtrar();
-
-    // produtos.push(new Produto(1, 1, "Produto 1", "Marca", "1 kg", 9.99));
-    // produtos.push(new Produto(2, 2, "Produto 2", "Marca", "1 kg", 9.99));
-    // const tabela = document.getElementById("tabelaProdutos");
-    // tabela.appendChild(produtoToTr(produtos[0]));
-    // tabela.appendChild(produtoToTr(produtos[1]));
+    viewModel.apresentarProdutos(produtos);
 }
-
-
-
 
 function obterDepartamentos() {
     const departamentos = [];
@@ -44,64 +35,65 @@ function obterDepartamentos() {
     return departamentos;
 }
 
-
-
 /**
  * @param {Produto} produto 
  */
-function cadastrar(produto) {
+function salvar(produto) {
+    if (produto.id == 0) {
+        produto.id = ++lastIdProduto;
+        produtos.push(produto);
+        viewModel.incluirProduto(produto);
+    }
+    else {
+        const produtoAntigo = produtos.find(p => p.id == produto.id);
+        if (produtoAntigo) {
+            produtoAntigo.nome = produto.nome;
+            produtoAntigo.idDepartamento = produto.idDepartamento;
+            produtoAntigo.marca = produto.marca;
+            produtoAntigo.peso = produto.peso;
+            produtoAntigo.preco = produto.preco;
+        }
 
-    produto.id = ++lastIdProduto;
-    produtos.push(produto);
-    viewModel.incluirProduto(produto);
+        filtrar(viewModel.filtroNome, viewModel.filtroDepartamento);
+    }
+
     viewModel.novoProduto();
-
-    // const tabela = document.getElementById("tabelaProdutos");
-    // tabela.appendChild(produtoToTr(produto));
-
-    // IndexViewModel.formCadastro.reset();
 }
 
 /**
  * @param {number} id 
  */
 function excluir(id) {
-    produtos = produtos.filter(p => p.id != id);
-    
-    const tr = document.getElementById(`tr_${id}`);
-    if(tr)
-        tr.remove();
+    if (confirm("Deseja remover o produto?")) {
+        produtos = produtos.filter(p => p.id != id);
+        filtrar(viewModel.filtroNome, viewModel.filtroDepartamento);
+        viewModel.novoProduto();
+    }
 }
 
 /**
  * @param {number} id 
  */
-function editar(id){
-    const selecionado = produtos.find(p => p.id == id);
-
+function editar(id) {
+    const produto = produtos.find(p => p.id == id);
+    if (produto)
+        viewModel.editarProduto(produto);
 }
 
-function filtrar() {
-    
+/**
+ * @param {string} filtroNome 
+ * @param {number} filtroDepartamento 
+ */
+function filtrar(filtroNome, filtroDepartamento) {
+
     let produtosFiltrados = produtos.slice();
-    if(IndexViewModel.filtroNome.value != "") {
-        produtosFiltrados = produtosFiltrados.filter(p => p.nome.includes(IndexViewModel.filtroNome.value));
-    }
+    if (filtroNome != "")
+        produtosFiltrados = produtosFiltrados.filter(p => p.nome.toLowerCase().includes(filtroNome.toLowerCase()));
 
-    if(IndexViewModel.filtroDepartamento.value != "0") {
-        produtosFiltrados = produtosFiltrados.filter(p => p.idDepartamento == parseInt(IndexViewModel.filtroDepartamento.value));
-    }
+    if (filtroDepartamento > 0)
+        produtosFiltrados = produtosFiltrados.filter(p => p.idDepartamento == filtroDepartamento);
 
-    produtos.forEach(p => {
-        const tr = document.getElementById(`tr_${p.id}`);
-        if(tr)
-            tr.remove();
-    });
-
-    const tabela = document.getElementById("tabelaProdutos");
-    produtosFiltrados.forEach(p => {
-        tabela.appendChild(produtoToTr(p));
-    });
+    viewModel.apresentarProdutos(produtosFiltrados);
 }
 
 main();
