@@ -10,98 +10,75 @@ const dbContext = new DbContext();
 /** @type {DepartamentoRepository} */ let departamentoRepository;
 /** @type {ProdutoRepository} */ let produtoRepository;
 
-/** @type {Produto[]} */
-let produtos = [];
-
-/** @type {number} */
-let lastIdProduto;
-
 async function main() {
 
     try {
-        await dbContext.InitDB();    
+        await dbContext.InitDB();
     } catch (error) {
         alert(error);
         return;
     }
 
     departamentoRepository = new DepartamentoRepository(dbContext.db);
-    produtoRepository = new ProdutoRepository(dbContext.db);
-
-    await departamentoRepository.initDepartamentos();
-    const departamentos = await departamentoRepository.obterDepartamentos();
+    await departamentoRepository.initialize();
+    const departamentos = await departamentoRepository.obter();
     viewModel.definirDepartamentos(departamentos);
+
+    produtoRepository = new ProdutoRepository(dbContext.db);
+    await atualizarLista();
 
     viewModel.novoProduto();
     viewModel.onsalvar = salvar;    // Create.
     viewModel.onfiltrar = filtrar;  // Read.
     viewModel.oneditar = editar;    // Update.
     viewModel.onexcluir = excluir;  // Delete.
-
-    lastIdProduto = 0;
-
-    viewModel.apresentarProdutos(produtos);
 }
 
 /**
  * @param {Produto} produto 
  */
-function salvar(produto) {
-    if (produto.id == 0) {
-        produto.id = ++lastIdProduto;
-        produtos.push(produto);
-        viewModel.incluirProduto(produto);
-    }
-    else {
-        const produtoAntigo = produtos.find(p => p.id == produto.id);
-        if (produtoAntigo) {
-            produtoAntigo.nome = produto.nome;
-            produtoAntigo.idDepartamento = produto.idDepartamento;
-            produtoAntigo.marca = produto.marca;
-            produtoAntigo.peso = produto.peso;
-            produtoAntigo.preco = produto.preco;
-        }
+async function salvar(produto) {
 
-        filtrar(viewModel.filtroNome, viewModel.filtroDepartamento);
+    try {
+        await produtoRepository.salvar(produto);
+        await atualizarLista();
+    } catch (error) {
+        alert(error);
     }
 
-    viewModel.novoProduto();
 }
 
 /**
  * @param {number} id 
  */
-function excluir(id) {
+async function excluir(id) {
     if (confirm("Deseja remover o produto?")) {
-        produtos = produtos.filter(p => p.id != id);
-        filtrar(viewModel.filtroNome, viewModel.filtroDepartamento);
+        await produtoRepository.excluir(id);
         viewModel.novoProduto();
+        await atualizarLista();
     }
 }
 
 /**
  * @param {number} id 
  */
-function editar(id) {
-    const produto = produtos.find(p => p.id == id);
+async function editar(id) {
+    const produto = await produtoRepository.obterPorId(id);
     if (produto)
         viewModel.editarProduto(produto);
+}
+
+async function atualizarLista() {
+    await filtrar(viewModel.filtroNome, viewModel.filtroDepartamento);
 }
 
 /**
  * @param {string} filtroNome 
  * @param {number} filtroDepartamento 
  */
-function filtrar(filtroNome, filtroDepartamento) {
-
-    let produtosFiltrados = produtos.slice();
-    if (filtroNome != "")
-        produtosFiltrados = produtosFiltrados.filter(p => p.nome.toLowerCase().includes(filtroNome.toLowerCase()));
-
-    if (filtroDepartamento > 0)
-        produtosFiltrados = produtosFiltrados.filter(p => p.idDepartamento == filtroDepartamento);
-
-    viewModel.apresentarProdutos(produtosFiltrados);
+async function filtrar(filtroNome, filtroDepartamento) {
+    const produtos = await produtoRepository.localizar(filtroNome, filtroDepartamento);
+    viewModel.apresentarProdutos(produtos);
 }
 
 main();

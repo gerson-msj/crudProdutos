@@ -59,10 +59,12 @@ export default class ViewModel {
     /** @type {HTMLInputElement} */
     #filtroNome = document.getElementById("filtroNome");
     get filtroNome() { return this.#filtroNome.value; }
+    set filtroNome(value) { this.#filtroNome.value = value; }
     
     /** @type {HTMLSelectElement} */
     #filtroDepartamento = document.getElementById("filtroDepartamento");
     get filtroDepartamento() { return parseInt(this.#filtroDepartamento.value); }
+    set filtroDepartamento(value) { this.#filtroDepartamento.value = value.toString(); }
 
     /**
      * @param {string} filtroNome 
@@ -107,8 +109,17 @@ export default class ViewModel {
         this.#cancelar.onclick = () => this.novoProduto();
         this.#excluir.onclick = () => this.onexcluir(this.#produto.id);
 
-        this.#filtroNome.onkeyup = () => this.onfiltrar(this.filtroNome, this.filtroDepartamento);
-        this.#filtroDepartamento.onchange = () => this.onfiltrar(this.filtroNome, this.filtroDepartamento);
+        this.filtroNome = window.localStorage.getItem("filtroNome") ?? "";
+        
+        this.#filtroNome.onkeyup = () => {
+            window.localStorage.setItem("filtroNome", this.filtroNome);
+            this.onfiltrar(this.filtroNome, this.filtroDepartamento);
+        };
+
+        this.#filtroDepartamento.onchange = () => {
+            window.localStorage.setItem("filtroDepartamento", this.filtroDepartamento.toString());
+            this.onfiltrar(this.filtroNome, this.filtroDepartamento);
+        };
 
         [this.#nome, this.#marca, this.#peso, this.#preco].forEach(e => e.addEventListener("keyup", () => this.#ativarBotoes()));
         this.#departamento.addEventListener("change", () => this.#ativarBotoes());
@@ -139,6 +150,8 @@ export default class ViewModel {
             this.#departamento.add(this.#departamentoToOption(d));
             this.#filtroDepartamento.add(this.#departamentoToOption(d));
         });
+
+        this.filtroDepartamento = parseInt(window.localStorage.getItem("filtroDepartamento") ?? "0");
     }
 
     /**

@@ -30,7 +30,7 @@ export default class DepartamentoRepository {
         this.#db = db;
     }
 
-    initDepartamentos() {
+    initialize() {
         return new Promise((resolve) => {
             const transaction = this.#db.transaction(this.#objectStoreName, "readwrite");
             const objectStore = transaction.objectStore(this.#objectStoreName);
@@ -63,7 +63,7 @@ export default class DepartamentoRepository {
     /**
      * @returns {Promise<Departamento[]>}
      */
-    obterDepartamentos() {
+    obter() {
         return new Promise(resolve => {
             const transaction = this.#db.transaction(this.#objectStoreName, "readonly");
             const objectStore = transaction.objectStore(this.#objectStoreName);

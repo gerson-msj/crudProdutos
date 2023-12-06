@@ -1,1 +1,1 @@
-import "../src/scripts/pages/produtos/app_v1.js";
+import "../src/scripts/pages/produtos/app_v2.js";

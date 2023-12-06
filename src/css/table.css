@@ -4,6 +4,7 @@ table {
     padding: 0 5px 0 5px;
     border-collapse: collapse;
     margin-top: 10px;
+    min-width: 472px;
 }
 
 th {
@@ -36,5 +37,4 @@ tr:first-child:hover {
 
 .scroll {
     overflow-x: auto;
-    min-width: 480px;
 }

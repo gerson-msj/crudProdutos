@@ -57,7 +57,7 @@ export default class DbContext {
             return;
 
         const objectStore = db.createObjectStore(objectStoreName, { autoIncrement: true, keyPath: "id" }); 
-        objectStore.createIndex("departamento_idx", "id_departamento", { unique: false });
+        objectStore.createIndex("departamento_idx", "idDepartamento", { unique: false });
         objectStore.createIndex("produto_idx", ["nome", "marca", "peso"], { unique: true });
     }
 }
