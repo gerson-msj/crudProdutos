@@ -1,6 +1,6 @@
-@import "./css/grid.css";
-@import "./css/form.css";
-@import "./css/table.css";
+@import "../src/css/grid.css";
+@import "../src/css/form.css";
+@import "../src/css/table.css";
 
 body {
     margin: 0;

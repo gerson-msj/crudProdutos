@@ -1,4 +1,5 @@
 export default class Departamento {
+    
     /**
      * @param {number} id 
      * @param {string} nome 
@@ -7,4 +8,5 @@ export default class Departamento {
         this.id = id;
         this.nome = nome;
     }
+    
 }

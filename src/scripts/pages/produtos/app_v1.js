@@ -1,8 +1,8 @@
-import IndexViewModel from "./indexViewModel.js";
-import Departamento from "./departamento.js";
-import Produto from "./produto.js";
+import ViewModel from "./viewModel.js";
+import Departamento from "../../models/departamento.js";
+import Produto from "../../models/produto.js";
 
-const viewModel = new IndexViewModel();
+const viewModel = new ViewModel();
 
 /** @type {Produto[]} */
 let produtos = [];
@@ -11,6 +11,7 @@ let produtos = [];
 let lastIdProduto;
 
 function main() {
+
     const departamentos = obterDepartamentos();
     viewModel.definirDepartamentos(departamentos);
     viewModel.novoProduto();
@@ -19,12 +20,10 @@ function main() {
     viewModel.oneditar = editar;    // Update.
     viewModel.onexcluir = excluir;  // Delete.
 
-    produtos.push(new Produto(1, 1, "Produto 1", "Marca", "1 kg", 9.99));
-    produtos.push(new Produto(2, 2, "Produto 2", "Marca", "1 kg", 9.99));
-
-    lastIdProduto = 2;
+    lastIdProduto = 0;
 
     viewModel.apresentarProdutos(produtos);
+
 }
 
 function obterDepartamentos() {

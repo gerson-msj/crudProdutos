@@ -1,0 +1,1 @@
+import {} from "../src/scripts/pages/produtos/app_v1.js";

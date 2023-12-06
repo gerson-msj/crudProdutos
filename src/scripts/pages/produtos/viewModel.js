@@ -1,7 +1,7 @@
-import Departamento from "./departamento.js";
-import Produto from "./produto.js";
+import Departamento from "../../models/departamento.js";
+import Produto from "../../models/produto.js";
 
-export default class IndexViewModel {
+export default class ViewModel {
 
     /** @type {HTMLInputElement} */
     #nome = document.getElementById("nome");
